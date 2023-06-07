@@ -65,13 +65,15 @@ def main():
     #Una volta eseguire commentando load model e un'altra volta no (fino a riga 72)
     # load model
     state_dict = torch.load(args.model_file) #MAX, map_location=torch.device('cpu')) uncomment if cpu
-    print(type(state_dict))
-    print(state_dict)
-    if 'state_dict' not in state_dict.keys():
+
+    #print(type(state_dict))
+    #print(state_dict)
+
+    #if 'state_dict' not in state_dict.keys():
         # state_dict = state_dict['state_dict']
-        model.load_state_dict(state_dict)
-    else:
-        model.module.load_state_dict(state_dict)
+        #model.load_state_dict(state_dict)
+    #else:
+    model.module.load_state_dict(state_dict)
 
     dataset_type = get_dataset(config)
 
