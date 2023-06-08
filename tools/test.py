@@ -86,7 +86,7 @@ def main():
     )
 
     nme, predictions = function.inference(config, test_loader, model)
-    torch.save(predictions, os.path.join(final_output_dir, 'predictions.pth'))
+    torch.save(predictions, os.path.join(final_output_dir, 'predictions_nme.pth'))
 
 
 if __name__ == '__main__':

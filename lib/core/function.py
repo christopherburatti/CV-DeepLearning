@@ -224,6 +224,7 @@ def inference(config, data_loader, model):
             nme_temp_eyebrows = [array[3] for array in nme_computed]
             nme_temp_chin = [array[4] for array in nme_computed]
 
+            """
             failure_008_eyes = (nme_temp_eyes > 0.08).sum()
             failure_010_eyes = (nme_temp_eyes > 0.10).sum()
             count_failure_008_eyes += failure_008_eyes
@@ -248,6 +249,7 @@ def inference(config, data_loader, model):
             failure_010_chin = (nme_temp_chin > 0.10).sum()
             count_failure_008_chin += failure_008_chin
             count_failure_010_chin += failure_010_chin
+            """
 
             nme_batch_sum_eyes += np.sum(nme_temp_eyes)
             nme_count_eyes = nme_count_eyes + preds.size(0)
@@ -272,43 +274,44 @@ def inference(config, data_loader, model):
             end = time.time()
 
     nme_eyes = nme_batch_sum_eyes / nme_count_eyes
-    failure_008_rate_eyes = count_failure_008_eyes / nme_count_eyes
-    failure_010_rate_eyes = count_failure_010_eyes / nme_count_eyes
+    
+    """failure_008_rate_eyes = count_failure_008_eyes / nme_count_eyes
+    failure_010_rate_eyes = count_failure_010_eyes / nme_count_eyes"""
     
     nme_mouth = nme_batch_sum_mouth / nme_count_mouth
-    failure_008_rate_mouth = count_failure_008_mouth / nme_count_mouth
-    failure_010_rate_mouth = count_failure_010_mouth / nme_count_mouth
+    """failure_008_rate_mouth = count_failure_008_mouth / nme_count_mouth
+    failure_010_rate_mouth = count_failure_010_mouth / nme_count_mouth"""
 
     nme_nose = nme_batch_sum_nose / nme_count_nose
-    failure_008_rate_nose = count_failure_008_nose / nme_count_nose
-    failure_010_rate_nose = count_failure_010_nose / nme_count_nose
+    """failure_008_rate_nose = count_failure_008_nose / nme_count_nose
+    failure_010_rate_nose = count_failure_010_nose / nme_count_nose"""
 
     nme_eyebrows = nme_batch_sum_eyebrows / nme_count_eyebrows
-    failure_008_rate_eyebrows = count_failure_008_eyebrows / nme_count_eyebrows
-    failure_010_rate_eyebrows = count_failure_010_eyebrows / nme_count_eyebrows
+    """failure_008_rate_eyebrows = count_failure_008_eyebrows / nme_count_eyebrows
+    failure_010_rate_eyebrows = count_failure_010_eyebrows / nme_count_eyebrows"""
 
     nme_chin = nme_batch_sum_chin / nme_count_chin
-    failure_008_rate_chin = count_failure_008_chin / nme_count_chin
-    failure_010_rate_chin = count_failure_010_chin / nme_count_chin
+    """failure_008_rate_chin = count_failure_008_chin / nme_count_chin
+    failure_010_rate_chin = count_failure_010_chin / nme_count_chin"""
 
     nme = [nme_eyes, nme_mouth, nme_nose, nme_eyebrows, nme_chin]
 
     msg = 'Test Results time:{:.4f} loss:{:.4f}'.format(batch_time.avg, losses.avg)
     
     msg_eyes = 'Test Results Eyes: nme_eyes:{:.4f} [008]_eyes:{:.4f} ' \
-          '[010]_eyes:{:.4f}'.format(nme_eyes, failure_008_rate_eyes, failure_010_rate_eyes)
+          '[010]_eyes:{:.4f}'.format(nme_eyes, 0.0, 0.0) #failure_008_rate_eyes, failure_010_rate_eyes)
     
     msg_mouth = 'Test Results Mouth: nme_mouth:{:.4f} [008]_mouth:{:.4f} ' \
-          '[010]_mouth:{:.4f}'.format(nme_mouth, failure_008_rate_mouth, failure_010_rate_mouth)
+          '[010]_mouth:{:.4f}'.format(nme_mouth, 0.0, 0.0) #failure_008_rate_mouth, failure_010_rate_mouth)
     
     msg_nose = 'Test Results Nose: nme_nose:{:.4f} [008]_nose:{:.4f} ' \
-          '[010]_nose:{:.4f}'.format(nme_nose, failure_008_rate_nose, failure_010_rate_nose)
+          '[010]_nose:{:.4f}'.format(nme_nose, 0.0, 0.0) #failure_008_rate_nose, failure_010_rate_nose)
     
     msg_eyebrows = 'Test Results Eyebrows: nme_eyebrows:{:.4f} [008]_eyebrows:{:.4f} ' \
-          '[010]_eyebrows:{:.4f}'.format(nme_eyebrows, failure_008_rate_eyebrows, failure_010_rate_eyebrows)
+          '[010]_eyebrows:{:.4f}'.format(nme_eyebrows, 0.0, 0.0) #failure_008_rate_eyebrows, failure_010_rate_eyebrows)
     
     msg_chin = 'Test Results Chin: nme_chin:{:.4f} [008]_chin:{:.4f} ' \
-          '[010]_chin:{:.4f}'.format(nme_chin, failure_008_rate_chin, failure_010_rate_chin)
+          '[010]_chin:{:.4f}'.format(nme_chin, 0.0, 0.0) #failure_008_rate_chin, failure_010_rate_chin)
     
     logger.info(msg)
     logger.info(msg_eyes)
