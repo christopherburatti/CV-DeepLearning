@@ -20,6 +20,10 @@ from lib.utils import utils
 from lib.datasets import get_dataset
 from lib.core import function
 
+import time
+import calendar
+from codecarbon import OfflineEmissionsTracker
+
 
 def parse_args():
 
@@ -85,8 +89,25 @@ def main():
         pin_memory=config.PIN_MEMORY
     )
 
+    #Startare il carbon footprint tracker
+    tracker = OfflineEmissionsTracker(country_iso_code="ITA")
+    tracker.start()
+
     nme, predictions = function.inference(config, test_loader, model)
-    torch.save(predictions, os.path.join(final_output_dir, 'predictions_nme.pth'))
+
+    #Stoppare il carbon footprint tracker
+    emissions: float = tracker.stop()
+
+    gmt = time.gmtime()
+    ts = calendar.timegm(gmt)
+    total_emissions_file = os.path.join(final_output_dir,
+                                          'emissions_test_FINAL' + ts.__str__() + ".txt")
+    
+    f = open(total_emissions_file, "w")
+    f.write(f"Emissions: {emissions} kg")
+    f.close()
+
+    torch.save(predictions, os.path.join(final_output_dir, 'predictions_FINAL.pth'))
 
 
 if __name__ == '__main__':

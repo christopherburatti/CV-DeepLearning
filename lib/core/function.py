@@ -49,8 +49,24 @@ def train(config, train_loader, model, critertion, optimizer,
     losses = AverageMeter()
 
     model.train()
-    nme_count = 0
-    nme_batch_sum = 0
+
+    #nme_count = 0
+    #nme_batch_sum = 0
+
+    nme_count_eyes = 0
+    nme_batch_sum_eyes = 0
+
+    nme_count_chin = 0
+    nme_batch_sum_chin = 0
+
+    nme_count_eyebrows = 0
+    nme_batch_sum_eyebrows = 0
+
+    nme_count_nose = 0
+    nme_batch_sum_nose = 0
+
+    nme_count_mouth = 0
+    nme_batch_sum_mouth = 0
 
     end = time.time()
 
@@ -70,9 +86,34 @@ def train(config, train_loader, model, critertion, optimizer,
         score_map = output.data.cpu()
         preds = decode_preds(score_map, meta['center'], meta['scale'], [64, 64])
 
+        # NME
+        nme_computed = compute_nme(preds, meta)
+        nme_temp_eyes = [array[0] for array in nme_computed]
+        nme_temp_mouth = [array[1] for array in nme_computed]
+        nme_temp_nose = [array[2] for array in nme_computed]
+        nme_temp_eyebrows = [array[3] for array in nme_computed]
+        nme_temp_chin = [array[4] for array in nme_computed]
+
+        nme_batch_sum_eyes += np.sum(nme_temp_eyes)
+        nme_count_eyes = nme_count_eyes + preds.size(0)
+
+        nme_batch_sum_mouth += np.sum(nme_temp_mouth)
+        nme_count_mouth = nme_count_mouth + preds.size(0)
+
+        nme_batch_sum_nose += np.sum(nme_temp_nose)
+        nme_count_nose = nme_count_nose + preds.size(0)
+
+        nme_batch_sum_eyebrows += np.sum(nme_temp_eyebrows)
+        nme_count_eyebrows = nme_count_eyebrows + preds.size(0)
+
+        nme_batch_sum_chin += np.sum(nme_temp_chin)
+        nme_count_chin = nme_count_chin + preds.size(0)
+
+        '''
         nme_batch = compute_nme(preds, meta)
         nme_batch_sum = nme_batch_sum + np.sum(nme_batch)
         nme_count = nme_count + preds.size(0)
+        '''
 
         # optimize
         optimizer.zero_grad()
@@ -100,10 +141,38 @@ def train(config, train_loader, model, critertion, optimizer,
                 writer_dict['train_global_steps'] = global_steps + 1
 
         end = time.time()
-    nme = nme_batch_sum / nme_count
-    msg = 'Train Epoch {} time:{:.4f} loss:{:.4f} nme:{:.4f}'\
-        .format(epoch, batch_time.avg, losses.avg, nme)
+
+    #nme = nme_batch_sum / nme_count
+    #msg = 'Train Epoch {} time:{:.4f} loss:{:.4f} nme:{:.4f}'\
+        #.format(epoch, batch_time.avg, losses.avg, nme)
+    #logger.info(msg)
+
+    nme_eyes = nme_batch_sum_eyes / nme_count_eyes
+    nme_mouth = nme_batch_sum_mouth / nme_count_mouth
+    nme_nose = nme_batch_sum_nose / nme_count_nose
+    nme_eyebrows = nme_batch_sum_eyebrows / nme_count_eyebrows
+    nme_chin = nme_batch_sum_chin / nme_count_chin
+
+    nme = [nme_eyes, nme_mouth, nme_nose, nme_eyebrows, nme_chin]
+
+    msg = 'Train Epoch {} time:{:.4f} loss:{:.4f}'.format(epoch, batch_time.avg, losses.avg)
+    
+    msg_eyes = 'Train Results Eyes: nme_eyes:{:.4f}'.format(nme_eyes)
+    
+    msg_mouth = 'Train Results Mouth: nme_mouth:{:.4f}'.format(nme_mouth)
+    
+    msg_nose = 'Train Results Nose: nme_nose:{:.4f}'.format(nme_nose)
+    
+    msg_eyebrows = 'Train Results Eyebrows: nme_eyebrows:{:.4f}'.format(nme_eyebrows)
+    
+    msg_chin = 'Train Results Chin: nme_chin:{:.4f}'.format(nme_chin)
+    
     logger.info(msg)
+    logger.info(msg_eyes)
+    logger.info(msg_mouth)
+    logger.info(msg_nose)
+    logger.info(msg_eyebrows)
+    logger.info(msg_chin)
 
 
 def validate(config, val_loader, model, criterion, epoch, writer_dict):
@@ -117,10 +186,21 @@ def validate(config, val_loader, model, criterion, epoch, writer_dict):
 
     model.eval()
 
-    nme_count = 0
-    nme_batch_sum = 0
-    count_failure_008 = 0
-    count_failure_010 = 0
+    nme_count_eyes = 0
+    nme_batch_sum_eyes = 0
+
+    nme_count_chin = 0
+    nme_batch_sum_chin = 0
+
+    nme_count_eyebrows = 0
+    nme_batch_sum_eyebrows = 0
+
+    nme_count_nose = 0
+    nme_batch_sum_nose = 0
+
+    nme_count_mouth = 0
+    nme_batch_sum_mouth = 0
+
     end = time.time()
 
     with torch.no_grad():
@@ -134,16 +214,36 @@ def validate(config, val_loader, model, criterion, epoch, writer_dict):
             loss = criterion(output, target)
 
             preds = decode_preds(score_map, meta['center'], meta['scale'], [64, 64])
-            # NME
-            nme_temp = compute_nme(preds, meta)
-            # Failure Rate under different threshold
-            failure_008 = (nme_temp > 0.08).sum()
-            failure_010 = (nme_temp > 0.10).sum()
-            count_failure_008 += failure_008
-            count_failure_010 += failure_010
 
-            nme_batch_sum += np.sum(nme_temp)
-            nme_count = nme_count + preds.size(0)
+            # NME
+            nme_computed = compute_nme(preds, meta)
+            nme_temp_eyes = [array[0] for array in nme_computed]
+            nme_temp_mouth = [array[1] for array in nme_computed]
+            nme_temp_nose = [array[2] for array in nme_computed]
+            nme_temp_eyebrows = [array[3] for array in nme_computed]
+            nme_temp_chin = [array[4] for array in nme_computed]
+
+            # Failure Rate under different threshold
+            #failure_008 = (nme_temp > 0.08).sum()
+            #failure_010 = (nme_temp > 0.10).sum()
+            #count_failure_008 += failure_008
+            #count_failure_010 += failure_010
+
+            nme_batch_sum_eyes += np.sum(nme_temp_eyes)
+            nme_count_eyes = nme_count_eyes + preds.size(0)
+
+            nme_batch_sum_mouth += np.sum(nme_temp_mouth)
+            nme_count_mouth = nme_count_mouth + preds.size(0)
+
+            nme_batch_sum_nose += np.sum(nme_temp_nose)
+            nme_count_nose = nme_count_nose + preds.size(0)
+
+            nme_batch_sum_eyebrows += np.sum(nme_temp_eyebrows)
+            nme_count_eyebrows = nme_count_eyebrows + preds.size(0)
+
+            nme_batch_sum_chin += np.sum(nme_temp_chin)
+            nme_count_chin = nme_count_chin + preds.size(0)
+
             for n in range(score_map.size(0)):
                 predictions[meta['index'][n], :, :] = preds[n, :, :]
 
@@ -153,20 +253,47 @@ def validate(config, val_loader, model, criterion, epoch, writer_dict):
             batch_time.update(time.time() - end)
             end = time.time()
 
-    nme = nme_batch_sum / nme_count
-    failure_008_rate = count_failure_008 / nme_count
-    failure_010_rate = count_failure_010 / nme_count
+    #nme = nme_batch_sum / nme_count
+    #failure_008_rate = count_failure_008 / nme_count
+    #failure_010_rate = count_failure_010 / nme_count
 
-    msg = 'Test Epoch {} time:{:.4f} loss:{:.4f} nme:{:.4f} [008]:{:.4f} ' \
-          '[010]:{:.4f}'.format(epoch, batch_time.avg, losses.avg, nme,
-                                failure_008_rate, failure_010_rate)
+    nme_eyes = nme_batch_sum_eyes / nme_count_eyes
+    nme_mouth = nme_batch_sum_mouth / nme_count_mouth
+    nme_nose = nme_batch_sum_nose / nme_count_nose
+    nme_eyebrows = nme_batch_sum_eyebrows / nme_count_eyebrows
+    nme_chin = nme_batch_sum_chin / nme_count_chin
+
+    nme = [nme_eyes, nme_mouth, nme_nose, nme_eyebrows, nme_chin]
+
+    msg = 'Validation Results time:{:.4f} loss:{:.4f}'.format(batch_time.avg, losses.avg)
+    
+    msg_eyes = 'Validation Results Eyes: nme_eyes:{:.4f}'.format(nme_eyes)
+    
+    msg_mouth = 'Validation Results Mouth: nme_mouth:{:.4f}'.format(nme_mouth)
+    
+    msg_nose = 'Validation Results Nose: nme_nose:{:.4f}'.format(nme_nose)
+    
+    msg_eyebrows = 'Validation Results Eyebrows: nme_eyebrows:{:.4f}'.format(nme_eyebrows)
+    
+    msg_chin = 'Validation Results Chin: nme_chin:{:.4f}'.format(nme_chin)
+    
     logger.info(msg)
+    logger.info(msg_eyes)
+    logger.info(msg_mouth)
+    logger.info(msg_nose)
+    logger.info(msg_eyebrows)
+    logger.info(msg_chin)
 
     if writer_dict:
         writer = writer_dict['writer']
         global_steps = writer_dict['valid_global_steps']
         writer.add_scalar('valid_loss', losses.avg, global_steps)
-        writer.add_scalar('valid_nme', nme, global_steps)
+        #writer.add_scalar('valid_nme', nme, global_steps)
+        writer.add_scalar('valid_nme_eyes', nme_eyes, global_steps)
+        writer.add_scalar('valid_nme_mouth', nme_mouth, global_steps)
+        writer.add_scalar('valid_nme_nose', nme_nose, global_steps)
+        writer.add_scalar('valid_nme_eyebrows', nme_eyebrows, global_steps)
+        writer.add_scalar('valid_nme_chin', nme_chin, global_steps)
         writer_dict['valid_global_steps'] = global_steps + 1
 
     return nme, predictions

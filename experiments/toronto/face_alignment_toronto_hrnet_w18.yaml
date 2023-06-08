@@ -6,7 +6,7 @@ DATASET:
   DATASET: 'TORONTO'
   ROOT: './data/toronto/images'
   TRAINSET: './data/toronto/face_landmarks_neuro_train.csv'
-  TESTSET: './data/toronto/face_landmarks_neuro_test.csv' #MAX was "valid" instead of test
+  TESTSET: './data/toronto/face_landmarks_neuro_valid.csv' #MAX was "valid" instead of "test"
   FLIP: true #CHRIS true
   SCALE_FACTOR: 0.25 #CHRIS 0.25
   ROT_FACTOR: 30 #CHRIS 30

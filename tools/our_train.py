@@ -53,7 +53,7 @@ def main():
         utils.create_logger(config, args.cfg, 'train')
 
     #CHRIS
-    final_output_dir = final_output_dir + "/CodeCarbon_Batch32"
+    final_output_dir = final_output_dir + "/CodeCarbon_FINAL"
     final_output_dir = Path(final_output_dir)
     if not final_output_dir.exists():
         print('=> creating {}'.format(final_output_dir))
