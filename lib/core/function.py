@@ -68,6 +68,9 @@ def train(config, train_loader, model, critertion, optimizer,
     nme_count_mouth = 0
     nme_batch_sum_mouth = 0
 
+    nme_count_dbox = 0
+    nme_batch_sum_dbox = 0
+
     end = time.time()
 
     for i, (inp, target, meta) in enumerate(train_loader):
@@ -93,6 +96,7 @@ def train(config, train_loader, model, critertion, optimizer,
         nme_temp_nose = [array[2] for array in nme_computed]
         nme_temp_eyebrows = [array[3] for array in nme_computed]
         nme_temp_chin = [array[4] for array in nme_computed]
+        nme_temp_dbox = [array[5] for array in nme_computed]
 
         nme_batch_sum_eyes += np.sum(nme_temp_eyes)
         nme_count_eyes = nme_count_eyes + preds.size(0)
@@ -108,6 +112,9 @@ def train(config, train_loader, model, critertion, optimizer,
 
         nme_batch_sum_chin += np.sum(nme_temp_chin)
         nme_count_chin = nme_count_chin + preds.size(0)
+
+        nme_batch_sum_dbox += np.sum(nme_temp_dbox)
+        nme_count_dbox = nme_count_dbox + preds.size(0)
 
         '''
         nme_batch = compute_nme(preds, meta)
@@ -152,8 +159,7 @@ def train(config, train_loader, model, critertion, optimizer,
     nme_nose = nme_batch_sum_nose / nme_count_nose
     nme_eyebrows = nme_batch_sum_eyebrows / nme_count_eyebrows
     nme_chin = nme_batch_sum_chin / nme_count_chin
-
-    nme = [nme_eyes, nme_mouth, nme_nose, nme_eyebrows, nme_chin]
+    nme_dbox = nme_batch_sum_dbox / nme_count_dbox
 
     msg = 'Train Epoch {} time:{:.4f} loss:{:.4f}'.format(epoch, batch_time.avg, losses.avg)
     
@@ -166,6 +172,8 @@ def train(config, train_loader, model, critertion, optimizer,
     msg_eyebrows = 'Train Results Eyebrows: nme_eyebrows:{:.4f}'.format(nme_eyebrows)
     
     msg_chin = 'Train Results Chin: nme_chin:{:.4f}'.format(nme_chin)
+
+    msg_dbox = 'Train Results Diagnoal Box: nme_dbox:{:.4f}'.format(nme_dbox)
     
     logger.info(msg)
     logger.info(msg_eyes)
@@ -173,6 +181,7 @@ def train(config, train_loader, model, critertion, optimizer,
     logger.info(msg_nose)
     logger.info(msg_eyebrows)
     logger.info(msg_chin)
+    logger.info(msg_dbox)
 
 
 def validate(config, val_loader, model, criterion, epoch, writer_dict):
@@ -201,6 +210,9 @@ def validate(config, val_loader, model, criterion, epoch, writer_dict):
     nme_count_mouth = 0
     nme_batch_sum_mouth = 0
 
+    nme_count_dbox = 0
+    nme_batch_sum_dbox = 0
+
     end = time.time()
 
     with torch.no_grad():
@@ -222,6 +234,7 @@ def validate(config, val_loader, model, criterion, epoch, writer_dict):
             nme_temp_nose = [array[2] for array in nme_computed]
             nme_temp_eyebrows = [array[3] for array in nme_computed]
             nme_temp_chin = [array[4] for array in nme_computed]
+            nme_temp_dbox = [array[5] for array in nme_computed]
 
             # Failure Rate under different threshold
             #failure_008 = (nme_temp > 0.08).sum()
@@ -244,6 +257,9 @@ def validate(config, val_loader, model, criterion, epoch, writer_dict):
             nme_batch_sum_chin += np.sum(nme_temp_chin)
             nme_count_chin = nme_count_chin + preds.size(0)
 
+            nme_batch_sum_dbox += np.sum(nme_temp_dbox)
+            nme_count_dbox = nme_count_dbox + preds.size(0)
+
             for n in range(score_map.size(0)):
                 predictions[meta['index'][n], :, :] = preds[n, :, :]
 
@@ -262,8 +278,9 @@ def validate(config, val_loader, model, criterion, epoch, writer_dict):
     nme_nose = nme_batch_sum_nose / nme_count_nose
     nme_eyebrows = nme_batch_sum_eyebrows / nme_count_eyebrows
     nme_chin = nme_batch_sum_chin / nme_count_chin
+    nme_dbox = nme_batch_sum_dbox / nme_count_dbox
 
-    nme = [nme_eyes, nme_mouth, nme_nose, nme_eyebrows, nme_chin]
+    nme = [nme_eyes, nme_mouth, nme_nose, nme_eyebrows, nme_chin, nme_dbox]
 
     msg = 'Validation Results time:{:.4f} loss:{:.4f}'.format(batch_time.avg, losses.avg)
     
@@ -276,6 +293,8 @@ def validate(config, val_loader, model, criterion, epoch, writer_dict):
     msg_eyebrows = 'Validation Results Eyebrows: nme_eyebrows:{:.4f}'.format(nme_eyebrows)
     
     msg_chin = 'Validation Results Chin: nme_chin:{:.4f}'.format(nme_chin)
+
+    msg_dbox = 'Validation Results Diagnoal Box: nme_dbox:{:.4f}'.format(nme_dbox)
     
     logger.info(msg)
     logger.info(msg_eyes)
@@ -283,6 +302,7 @@ def validate(config, val_loader, model, criterion, epoch, writer_dict):
     logger.info(msg_nose)
     logger.info(msg_eyebrows)
     logger.info(msg_chin)
+    logger.info(msg_dbox)
 
     if writer_dict:
         writer = writer_dict['writer']

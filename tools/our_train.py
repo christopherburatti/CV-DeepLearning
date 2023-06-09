@@ -152,8 +152,8 @@ def main():
         nme, predictions = function.validate(config, val_loader, model,
                                              criterion, epoch, writer_dict)
 
-        is_best = nme < best_nme
-        best_nme = min(nme, best_nme)
+        is_best = nme[5] < best_nme
+        best_nme = min(nme[5], best_nme)
 
         logger.info('=> saving checkpoint to {}'.format(final_output_dir))
         print("best:", is_best)
@@ -177,7 +177,7 @@ def main():
     f.close()
 
     final_model_state_file = os.path.join(final_output_dir,
-                                          'final_state.pth')
+                                          'final_state_FINAL.pth')
     logger.info('saving final model state to {}'.format(
         final_model_state_file))
     torch.save(model.module.state_dict(), final_model_state_file)
