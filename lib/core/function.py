@@ -334,6 +334,11 @@ def inference(config, data_loader, model):
     count_failure_008_mouth = 0
     count_failure_010_mouth = 0
 
+    nme_count_dbox = 0
+    nme_batch_sum_dbox = 0
+    count_failure_008_dbox = 0
+    count_failure_010_dbox = 0
+
     end = time.time()
 
     with torch.no_grad():
@@ -350,6 +355,7 @@ def inference(config, data_loader, model):
             nme_temp_nose = [array[2] for array in nme_computed]
             nme_temp_eyebrows = [array[3] for array in nme_computed]
             nme_temp_chin = [array[4] for array in nme_computed]
+            nme_temp_dbox = [array[5] for array in nme_computed]
 
             """
             failure_008_eyes = (nme_temp_eyes > 0.08).sum()
@@ -393,6 +399,9 @@ def inference(config, data_loader, model):
             nme_batch_sum_chin += np.sum(nme_temp_chin)
             nme_count_chin = nme_count_chin + preds.size(0)
 
+            nme_batch_sum_dbox += np.sum(nme_temp_dbox)
+            nme_count_dbox = nme_count_dbox + preds.size(0)
+
             for n in range(score_map.size(0)):
                 predictions[meta['index'][n], :, :] = preds[n, :, :]
 
@@ -421,7 +430,9 @@ def inference(config, data_loader, model):
     """failure_008_rate_chin = count_failure_008_chin / nme_count_chin
     failure_010_rate_chin = count_failure_010_chin / nme_count_chin"""
 
-    nme = [nme_eyes, nme_mouth, nme_nose, nme_eyebrows, nme_chin]
+    nme_dbox = nme_batch_sum_dbox / nme_count_dbox
+
+    nme = [nme_eyes, nme_mouth, nme_nose, nme_eyebrows, nme_chin, nme_dbox]
 
     msg = 'Test Results time:{:.4f} loss:{:.4f}'.format(batch_time.avg, losses.avg)
     
@@ -440,12 +451,16 @@ def inference(config, data_loader, model):
     msg_chin = 'Test Results Chin: nme_chin:{:.4f} [008]_chin:{:.4f} ' \
           '[010]_chin:{:.4f}'.format(nme_chin, 0.0, 0.0) #failure_008_rate_chin, failure_010_rate_chin)
     
+    msg_dbox = 'Test Results Diagnoal Box: nme_dbox:{:.4f} [008]_dbox:{:.4f} ' \
+          '[010]_dbox:{:.4f}'.format(nme_dbox, 0.0, 0.0) #failure_008_rate_chin, failure_010_rate_chin)
+    
     logger.info(msg)
     logger.info(msg_eyes)
     logger.info(msg_mouth)
     logger.info(msg_nose)
     logger.info(msg_eyebrows)
     logger.info(msg_chin)
+    logger.info(msg_dbox)
 
     return nme, predictions
 

@@ -42,7 +42,7 @@ def compute_nme(preds, meta):
     N = preds.shape[0]
     L = preds.shape[1]
     #rmse = np.zeros(N)
-    rmse = np.zeros((N,5))
+    rmse = np.zeros((N,6))
 
     for i in range(N):
         pts_pred, pts_gt = preds[i, ], target[i, ]
@@ -50,12 +50,13 @@ def compute_nme(preds, meta):
             interocular = meta['box_size'][i]
         elif L == 29:  # cofw
             interocular = np.linalg.norm(pts_gt[8, ] - pts_gt[9, ])
-        elif L == 68:  # 300w
+        elif L == 68:  # 300w or Toronto
             interocular = np.linalg.norm(pts_gt[36, ] - pts_gt[45, ])
             intermouth = np.linalg.norm(pts_gt[48, ] - pts_gt[54, ])
             internose = np.linalg.norm(pts_gt[31, ] - pts_gt[35, ])
             intereyebrow = np.linalg.norm(pts_gt[17, ] - pts_gt[26, ])
             interchin = np.linalg.norm(pts_gt[0, ] - pts_gt[16, ])
+            box_diagonal = meta['box_diagonal'][i]
         elif L == 98:
             interocular = np.linalg.norm(pts_gt[60, ] - pts_gt[72, ])
         else:
@@ -66,6 +67,7 @@ def compute_nme(preds, meta):
         rmse[i][2] = np.sum(np.linalg.norm(pts_pred - pts_gt, axis=1)) / (internose * L)
         rmse[i][3] = np.sum(np.linalg.norm(pts_pred - pts_gt, axis=1)) / (intereyebrow * L)
         rmse[i][4] = np.sum(np.linalg.norm(pts_pred - pts_gt, axis=1)) / (interchin * L)
+        rmse[i][5] = np.sum(np.linalg.norm(pts_pred - pts_gt, axis=1)) / (box_diagonal * L)
 
     return rmse
 

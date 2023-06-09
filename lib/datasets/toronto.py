@@ -55,6 +55,8 @@ class TORONTO(data.Dataset):
         center_h = self.landmarks_frame.iloc[idx, 3]
         center = torch.Tensor([center_w, center_h])
 
+        box_diagonal = self.landmarks_frame.iloc[idx, 4]
+
         pts = self.landmarks_frame.iloc[idx, 5:].values
         pts = pts.astype('float').reshape(-1, 2)
 
@@ -96,7 +98,7 @@ class TORONTO(data.Dataset):
         tpts = torch.Tensor(tpts)
         center = torch.Tensor(center)
 
-        meta = {'index': idx, 'center': center, 'scale': scale,
+        meta = {'index': idx, 'center': center, 'scale': scale, 'box_diagonal': box_diagonal,
                 'pts': torch.Tensor(pts), 'tpts': tpts}
 
         return img, target, meta
