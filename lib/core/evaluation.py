@@ -17,6 +17,7 @@ def get_preds(scores):
     get predictions from score maps in torch Tensor
     return type: torch.LongTensor
     """
+
     assert scores.dim() == 4, 'Score maps should be 4-dim'
     maxval, idx = torch.max(scores.view(scores.size(0), scores.size(1), -1), 2)
 
@@ -46,27 +47,38 @@ def compute_nme(preds, meta):
 
     for i in range(N):
         pts_pred, pts_gt = preds[i, ], target[i, ]
+
         if L == 19:  # aflw
             interocular = meta['box_size'][i]
         elif L == 29:  # cofw
             interocular = np.linalg.norm(pts_gt[8, ] - pts_gt[9, ])
         elif L == 68:  # 300w or Toronto
+            """
             interocular = np.linalg.norm(pts_gt[36, ] - pts_gt[45, ])
             intermouth = np.linalg.norm(pts_gt[48, ] - pts_gt[54, ])
             internose = np.linalg.norm(pts_gt[31, ] - pts_gt[35, ])
             intereyebrow = np.linalg.norm(pts_gt[17, ] - pts_gt[26, ])
             interchin = np.linalg.norm(pts_gt[0, ] - pts_gt[16, ])
+            """
             box_diagonal = meta['box_diagonal'][i]
+
         elif L == 98:
             interocular = np.linalg.norm(pts_gt[60, ] - pts_gt[72, ])
         else:
             raise ValueError('Number of landmarks is wrong')
         
+        """
         rmse[i][0] = np.sum(np.linalg.norm(pts_pred - pts_gt, axis=1)) / (interocular * L)
         rmse[i][1] = np.sum(np.linalg.norm(pts_pred - pts_gt, axis=1)) / (intermouth * L)
         rmse[i][2] = np.sum(np.linalg.norm(pts_pred - pts_gt, axis=1)) / (internose * L)
         rmse[i][3] = np.sum(np.linalg.norm(pts_pred - pts_gt, axis=1)) / (intereyebrow * L)
         rmse[i][4] = np.sum(np.linalg.norm(pts_pred - pts_gt, axis=1)) / (interchin * L)
+        """
+        rmse[i][0] = np.sum(np.linalg.norm(pts_pred[36:48] - pts_gt[36:48], axis=1)) / (box_diagonal * L)
+        rmse[i][1] = np.sum(np.linalg.norm(pts_pred[48:] - pts_gt[48:], axis=1)) / (box_diagonal * L)
+        rmse[i][2] = np.sum(np.linalg.norm(pts_pred[27:36] - pts_gt[27:36], axis=1)) / (box_diagonal * L)
+        rmse[i][3] = np.sum(np.linalg.norm(pts_pred[17:27] - pts_gt[17:27], axis=1)) / (box_diagonal * L)
+        rmse[i][4] = np.sum(np.linalg.norm(pts_pred[:17] - pts_gt[:17], axis=1)) / (box_diagonal * L)
         rmse[i][5] = np.sum(np.linalg.norm(pts_pred - pts_gt, axis=1)) / (box_diagonal * L)
 
     return rmse
@@ -74,7 +86,6 @@ def compute_nme(preds, meta):
 
 def decode_preds(output, center, scale, res):
     coords = get_preds(output)  # float type
-
     coords = coords.cpu()
     # pose-processing
     for n in range(coords.size(0)):
