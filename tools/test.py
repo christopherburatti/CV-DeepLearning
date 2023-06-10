@@ -101,13 +101,13 @@ def main():
     gmt = time.gmtime()
     ts = calendar.timegm(gmt)
     total_emissions_file = os.path.join(final_output_dir,
-                                          'emissions_test_FINAL' + ts.__str__() + ".txt")
+                                          'emissions_test_FINAL_2' + ts.__str__() + ".txt")
     
     f = open(total_emissions_file, "w")
     f.write(f"Emissions: {emissions} kg")
     f.close()
 
-    torch.save(predictions, os.path.join(final_output_dir, 'predictions_FINAL.pth'))
+    torch.save(predictions, os.path.join(final_output_dir, 'predictions_FINAL_2.pth'))
 
 
 if __name__ == '__main__':

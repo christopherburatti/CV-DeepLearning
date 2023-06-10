@@ -53,7 +53,7 @@ def main():
         utils.create_logger(config, args.cfg, 'train')
 
     #CHRIS
-    final_output_dir = final_output_dir + "/CodeCarbon_FINAL"
+    final_output_dir = final_output_dir + "/CodeCarbon_FINAL_2"
     final_output_dir = Path(final_output_dir)
     if not final_output_dir.exists():
         print('=> creating {}'.format(final_output_dir))
@@ -177,7 +177,7 @@ def main():
     f.close()
 
     final_model_state_file = os.path.join(final_output_dir,
-                                          'final_state_FINAL.pth')
+                                          'final_state_FINAL_2.pth')
     logger.info('saving final model state to {}'.format(
         final_model_state_file))
     torch.save(model.module.state_dict(), final_model_state_file)
