@@ -74,12 +74,12 @@ def compute_nme(preds, meta):
         rmse[i][3] = np.sum(np.linalg.norm(pts_pred - pts_gt, axis=1)) / (intereyebrow * L)
         rmse[i][4] = np.sum(np.linalg.norm(pts_pred - pts_gt, axis=1)) / (interchin * L)
         """
-        rmse[i][0] = np.sum(np.linalg.norm(pts_pred[36:48] - pts_gt[36:48], axis=1)) / (box_diagonal * L)
-        rmse[i][1] = np.sum(np.linalg.norm(pts_pred[48:] - pts_gt[48:], axis=1)) / (box_diagonal * L)
-        rmse[i][2] = np.sum(np.linalg.norm(pts_pred[27:36] - pts_gt[27:36], axis=1)) / (box_diagonal * L)
-        rmse[i][3] = np.sum(np.linalg.norm(pts_pred[17:27] - pts_gt[17:27], axis=1)) / (box_diagonal * L)
-        rmse[i][4] = np.sum(np.linalg.norm(pts_pred[:17] - pts_gt[:17], axis=1)) / (box_diagonal * L)
-        rmse[i][5] = np.sum(np.linalg.norm(pts_pred - pts_gt, axis=1)) / (box_diagonal * L)
+        rmse[i][0] = np.sum(np.linalg.norm(pts_pred[36:48] - pts_gt[36:48], axis=(0,1))) / (box_diagonal * 12)
+        rmse[i][1] = np.sum(np.linalg.norm(pts_pred[48:] - pts_gt[48:], axis=(0,1))) / (box_diagonal * 20)
+        rmse[i][2] = np.sum(np.linalg.norm(pts_pred[27:36] - pts_gt[27:36], axis=(0,1))) / (box_diagonal * 9)
+        rmse[i][3] = np.sum(np.linalg.norm(pts_pred[17:27] - pts_gt[17:27], axis=(0,1))) / (box_diagonal * 10)
+        rmse[i][4] = np.sum(np.linalg.norm(pts_pred[:17] - pts_gt[:17], axis=(0,1))) / (box_diagonal * 17)
+        rmse[i][5] = np.sum(np.linalg.norm(pts_pred - pts_gt, axis=(0,1))) / (box_diagonal * L)
 
     return rmse
 
