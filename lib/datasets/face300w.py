@@ -18,12 +18,16 @@ from ..utils.transforms import fliplr_joints, crop, generate_target, transform_p
 
 class Face300W(data.Dataset):
 
-    def __init__(self, cfg, is_train=True, transform=None):
+    def __init__(self, cfg, is_train=0, transform=None):
         # specify annotation file for dataset
-        if is_train:
+        if is_train == 0:
             self.csv_file = cfg.DATASET.TRAINSET
-        else:
+        elif is_train == 1:
+            self.csv_file = cfg.DATASET.VALSET
+        elif is_train == 2:
             self.csv_file = cfg.DATASET.TESTSET
+        else:
+            self.csv_file = cfg.DATASET.DEMOSET
 
         self.is_train = is_train
         self.transform = transform
@@ -63,7 +67,7 @@ class Face300W(data.Dataset):
         img = np.array(Image.open(image_path).convert('RGB'), dtype=np.float32)
 
         r = 0
-        if self.is_train:
+        if self.is_train == 0:
             scale = scale * (random.uniform(1 - self.scale_factor,
                                             1 + self.scale_factor))
             r = random.uniform(-self.rot_factor, self.rot_factor) \

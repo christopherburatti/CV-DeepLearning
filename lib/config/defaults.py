@@ -83,19 +83,15 @@ _C.DATASET = CN()
 _C.DATASET.ROOT = './data/toronto/images'
 _C.DATASET.DATASET = 'TORONTO'
 _C.DATASET.TRAINSET = './data/toronto/face_landmarks_neuro_train.csv'
+_C.DATASET.VALSET = './data/toronto/face_landmarks_neuro_valid.csv'
 _C.DATASET.TESTSET = './data/toronto/face_landmarks_neuro_test.csv'
+_C.DATASET.DEMOSET = './data/toronto/face_landmarks_neuro_demo.csv'
 
-'''
+
 # training data augmentation
 _C.DATASET.FLIP = True
 _C.DATASET.SCALE_FACTOR = 0.25
 _C.DATASET.ROT_FACTOR = 30
-'''
-#CHRIS
-# training data augmentation
-_C.DATASET.FLIP = False
-_C.DATASET.SCALE_FACTOR = 0.0
-_C.DATASET.ROT_FACTOR = 0
 
 # train
 _C.TRAIN = CN()

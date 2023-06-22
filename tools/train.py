@@ -22,6 +22,12 @@ from lib.datasets import get_dataset
 from lib.core import function
 from lib.utils import utils
 
+from pathlib import Path
+
+import time
+import calendar
+from codecarbon import OfflineEmissionsTracker
+
 
 def parse_args():
 
@@ -39,9 +45,18 @@ def main():
 
     args = parse_args()
 
+    print(args.cfg)
+
     logger, final_output_dir, tb_log_dir = \
         utils.create_logger(config, args.cfg, 'train')
 
+    #CHRIS
+    final_output_dir = final_output_dir + "/CodeCarbon_FINAL_3"
+    final_output_dir = Path(final_output_dir)
+    if not final_output_dir.exists():
+        print('=> creating {}'.format(final_output_dir))
+        final_output_dir.mkdir()
+    
     logger.info(pprint.pformat(args))
     logger.info(pprint.pformat(config))
 
@@ -59,10 +74,10 @@ def main():
     }
 
     gpus = list(config.GPUS)
-    model = nn.DataParallel(model, device_ids=gpus).cuda()
+    model = nn.DataParallel(model, device_ids=gpus).cuda() #MAX comment .cuda() if cpu
 
     # loss
-    criterion = torch.nn.MSELoss(size_average=True).cuda()
+    criterion = torch.nn.MSELoss(size_average=True).cuda() #MAX comment .cuda() if cpu
 
     optimizer = utils.get_optimizer(config, model)
     best_nme = 100
@@ -71,10 +86,10 @@ def main():
         model_state_file = os.path.join(final_output_dir,
                                         'latest.pth')
         if os.path.islink(model_state_file):
-            checkpoint = torch.load(model_state_file)
+            checkpoint = torch.load(model_state_file) #MAX , map_location=torch.device('cpu')) uncomment if cpu
             last_epoch = checkpoint['epoch']
             best_nme = checkpoint['best_nme']
-            model.load_state_dict(checkpoint['state_dict'])
+            model.load_state_dict(checkpoint['state_dict'], )
             optimizer.load_state_dict(checkpoint['optimizer'])
             print("=> loaded checkpoint (epoch {})"
                   .format(checkpoint['epoch']))
@@ -91,24 +106,37 @@ def main():
             optimizer, config.TRAIN.LR_STEP,
             config.TRAIN.LR_FACTOR, last_epoch-1
         )
+
+    #CHRIS
+    '''
+    state_dict = torch.load(args.model_file) #MAX, map_location=torch.device('cpu')) uncomment if cpu
+    if 'state_dict' not in state_dict.keys():
+        # state_dict = state_dict['state_dict']
+        model.load_state_dict(state_dict)
+    else:
+        model.module.load_state_dict(state_dict)
+    '''
+
     dataset_type = get_dataset(config)
 
     train_loader = DataLoader(
-        dataset=dataset_type(config,
-                             is_train=True),
+        dataset=dataset_type(config, is_train=0),
         batch_size=config.TRAIN.BATCH_SIZE_PER_GPU*len(gpus),
         shuffle=config.TRAIN.SHUFFLE,
         num_workers=config.WORKERS,
         pin_memory=config.PIN_MEMORY)
 
     val_loader = DataLoader(
-        dataset=dataset_type(config,
-                             is_train=False),
+        dataset=dataset_type(config, is_train=1),
         batch_size=config.TEST.BATCH_SIZE_PER_GPU*len(gpus),
         shuffle=False,
         num_workers=config.WORKERS,
         pin_memory=config.PIN_MEMORY
     )
+
+    #Startare il carbon footprint tracker
+    tracker = OfflineEmissionsTracker(country_iso_code="ITA")
+    tracker.start()
 
     for epoch in range(last_epoch, config.TRAIN.END_EPOCH):
         lr_scheduler.step()
@@ -120,8 +148,8 @@ def main():
         nme, predictions = function.validate(config, val_loader, model,
                                              criterion, epoch, writer_dict)
 
-        is_best = nme < best_nme
-        best_nme = min(nme, best_nme)
+        is_best = nme[5] < best_nme
+        best_nme = min(nme[5], best_nme)
 
         logger.info('=> saving checkpoint to {}'.format(final_output_dir))
         print("best:", is_best)
@@ -132,8 +160,20 @@ def main():
              "optimizer": optimizer.state_dict(),
              }, predictions, is_best, final_output_dir, 'checkpoint_{}.pth'.format(epoch))
 
+    #Stoppare il carbon footprint tracker
+    emissions: float = tracker.stop()
+
+    gmt = time.gmtime()
+    ts = calendar.timegm(gmt)
+    total_emissions_file = os.path.join(final_output_dir,
+                                          'emissions' + ts.__str__() + ".txt")
+    
+    f = open(total_emissions_file, "w")
+    f.write(f"Emissions: {emissions} kg")
+    f.close()
+
     final_model_state_file = os.path.join(final_output_dir,
-                                          'final_state.pth')
+                                          'final_state_FINAL_3.pth')
     logger.info('saving final model state to {}'.format(
         final_model_state_file))
     torch.save(model.module.state_dict(), final_model_state_file)

@@ -82,7 +82,7 @@ def main():
     dataset_type = get_dataset(config)
 
     test_loader = DataLoader(
-        dataset=dataset_type(config, is_train=False),
+        dataset=dataset_type(config, is_train=2),
         batch_size=config.TEST.BATCH_SIZE_PER_GPU*len(gpus),
         shuffle=False,
         num_workers=config.WORKERS,
