@@ -17,3 +17,6 @@
   ```bash
   python tools/demo.py --cfg hrnetv2_w18_imagenet_pretrained.pth --model model_best_FINAL_3.pth
   ```
+
+## Nota
+Per il corretto funzionamento del codice è necessario inserire una cartella "data", contenente una sotto-cartella "images", contenente tutte le immagini del dataset, e i file .csv, ognuno relativo ai valori di ground truth dei landmark facciali delle immagini del dataset utilizzate rispettivamente in fase di training, validation e testing.
